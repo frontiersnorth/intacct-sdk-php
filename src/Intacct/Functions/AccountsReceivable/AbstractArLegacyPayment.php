@@ -20,7 +20,7 @@ namespace Intacct\Functions\AccountsReceivable;
 use Intacct\Functions\AbstractFunction;
 use InvalidArgumentException;
 
-abstract class AbstractArPayment extends AbstractFunction
+abstract class AbstractArLegacyPayment extends AbstractFunction
 {
 
     /** @var string */
@@ -55,129 +55,82 @@ abstract class AbstractArPayment extends AbstractFunction
         //'Online ACH Debit',
     ];
 
-    /** @var string */
-    protected $financialEntity;
-
     /** @var int|string */
-    protected $docNumber;
+    protected $recordNo;
 
     /** @var string */
     protected $paymentMethod;
 
     /** @var string */
-    protected $currency;
-
-    /** @var string */
-    protected $customerId;
-
-    /** @var string */
-    protected $description;
-
-    /** @var string */
-    protected $receiptDate;
-
-    /** @var string */
-    protected $exchangeRateTypeId;
-
-    /** @var string */
-    protected $exchangeRate;
-
-    /** @var string */
-    protected $paymentDate;
-
-    /** @var double */
-    protected $amountToPay;
-    
-    /** @var double */
-    protected $transactionAmountToPay;
-
-    /** @var string */
-    protected $prBatch;
-
-    /** @var string */
-    protected $whenPaid;
-
-    /** @var string */
-    protected $baseCurrency;
+    protected $bankAccountId;
 
     /** @var string */
     protected $undepositedFundsGlAccountNo;
 
     /** @var string */
-    protected $overpaymentDepartmentId;
+    protected $transactionCurrency;
+
+    /** @var string */
+    protected $baseCurrency;
+
+    /** @var string */
+    protected $customerId;
+
+    /** @var \DateTime */
+    protected $receivedDate;
+
+    /** @var float|string */
+    protected $transactionPaymentAmount;
+
+    /** @var float|string */
+    protected $basePaymentAmount;
+
+    /** @var \DateTime */
+    protected $exchangeRateDate;
+
+    /** @var float */
+    protected $exchangeRateValue;
+
+    /** @var string */
+    protected $exchangeRateType;
+
+    /** @var string */
+    protected $creditCardType;
+
+    /** @var string */
+    protected $authorizationCode;
 
     /** @var string */
     protected $overpaymentLocationId;
 
     /** @var string */
-    protected $overpaymentAmount;
+    protected $overpaymentDepartmentId;
 
     /** @var string */
-    protected $billToPayName;
-    
-    /** @var ArPaymentDetail[] */
+    protected $referenceNumber;
+
+    /** @var ArLegacyPaymentItem[] */
     protected $paymentDetail = [];
-
-    /**
-     * Get financial entity
-     *
-     * @return string
-     */
-    public function getFinancialEntity()
-    {
-        return $this->financialEntity;
-    }
-
-    /**
-     * Set financial entity
-     *
-     * @param string $financialEntity
-     */
-    public function setFinancialEntity($financialEntity)
-    {
-        $this->financialEntity = $financialEntity;
-    }
 
     /**
      * Get record number
      *
      * @return int|string
      */
-    public function getDocNumber()
+    public function getRecordNo()
     {
-        return $this->docNumber;
+        return $this->recordNo;
     }
 
     /**
      * Set record number
      *
-     * @param string $docNumber
+     * @param int|string $recordNo
      */
-    public function setDocNumber($docNumber)
+    public function setRecordNo($recordNo)
     {
-        $this->docNumber = $docNumber;
+        $this->recordNo = $recordNo;
     }
-
-    /**
-     * Get description
-     *
-     * @return string
-     */
-    public function getDescription()
-    {
-        return $this->description;
-    }
-
-    /**
-     * Set description
-     *
-     * @param string $description
-     */
-    public function setDescription($description)
-    {
-        $this->description = $description;
-    }
-
 
     /**
      * Get payment method
@@ -208,9 +161,9 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @return string
      */
-    public function getAmountToPay()
+    public function getBankAccountId()
     {
-        return $this->amountToPay;
+        return $this->bankAccountId;
     }
 
     /**
@@ -218,30 +171,10 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @param string $bankAccountId
      */
-    public function setAmountToPay($amountToPay)
+    public function setBankAccountId($bankAccountId)
     {
-        $this->amountToPay = $amountToPay;
+        $this->bankAccountId = $bankAccountId;
     }
-
-    /**
-     * Set bill to pay name
-     *
-     * @return string
-     */
-    public function getBillToPayName()
-    {
-        return $this->billToPayName;
-    }
-
-    /**
-     * Get bill to pay name
-     *
-     * @param string $billToPayName
-     */
-    public function setBillToPayName($billToPayName)
-    {
-        $this->billToPayName = $billToPayName;
-    }    
 
     /**
      * Get undeposited funds GL account number
@@ -268,19 +201,19 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @return string
      */
-    public function getCurrency()
+    public function getTransactionCurrency()
     {
-        return $this->currency;
+        return $this->transactionCurrency;
     }
 
     /**
      * Set transaction currency
      *
-     * @param string $currency
+     * @param string $transactionCurrency
      */
-    public function setCurrency($currency)
+    public function setTransactionCurrency($transactionCurrency)
     {
-        $this->currency = $currency;
+        $this->transactionCurrency = $transactionCurrency;
     }
 
     /**
@@ -328,9 +261,9 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @return \DateTime
      */
-    public function getReceiptDate()
+    public function getReceivedDate()
     {
-        return $this->receiptDate;
+        return $this->receivedDate;
     }
 
     /**
@@ -338,29 +271,9 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @param \DateTime $receivedDate
      */
-    public function setReceiptDate($receiptDate)
+    public function setReceivedDate($receivedDate)
     {
-        $this->receiptDate = $receiptDate;
-    }
-
-    /**
-     * Get paid date
-     *
-     * @return string
-     */
-    public function getWhenPaid()
-    {
-        return $this->whenPaid;
-    }
-
-    /**
-     * Set paid date
-     *
-     * @param string $whenPaid
-     */
-    public function setWhenPaid($whenPaid)
-    {
-        $this->whenPaid = $whenPaid;
+        $this->receivedDate = $receivedDate;
     }
 
     /**
@@ -368,39 +281,59 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @return float|string
      */
-    public function getTransactionAmountToPay()
+    public function getTransactionPaymentAmount()
     {
-        return $this->transactionAmountToPay;
+        return $this->transactionPaymentAmount;
     }
 
     /**
      * Set transaction payment amount
      *
-     * @param float|string $transactionAmountToPay
+     * @param float|string $transactionPaymentAmount
      */
-    public function setTransactionAmountToPay($transactionAmountToPay)
+    public function setTransactionPaymentAmount($transactionPaymentAmount)
     {
-        $this->transactionAmountToPay = $transactionAmountToPay;
+        $this->transactionPaymentAmount = $transactionPaymentAmount;
     }
 
     /**
-     * Get PR Batch
+     * Get base payment amount
      *
      * @return float|string
      */
-    public function getPrBatch()
+    public function getBasePaymentAmount()
     {
-        return $this->prBatch;
+        return $this->basePaymentAmount;
     }
 
     /**
-     * Set PR Batch
+     * Set base payment amount
      *
-     * @param string $prBatch
+     * @param float|string $basePaymentAmount
      */
-    public function setPrBatch($prBatch)
+    public function setBasePaymentAmount($basePaymentAmount)
     {
-        $this->prBatch = $prBatch;
+        $this->basePaymentAmount = $basePaymentAmount;
+    }
+
+    /**
+     * Get exchange rate date
+     *
+     * @return \DateTime
+     */
+    public function getExchangeRateDate()
+    {
+        return $this->exchangeRateDate;
+    }
+
+    /**
+     * Set exchange rate date
+     *
+     * @param \DateTime $exchangeRateDate
+     */
+    public function setExchangeRateDate($exchangeRateDate)
+    {
+        $this->exchangeRateDate = $exchangeRateDate;
     }
 
     /**
@@ -408,29 +341,29 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @return float
      */
-    public function getExchangeRate()
+    public function getExchangeRateValue()
     {
-        return $this->exchangeRate;
+        return $this->exchangeRateValue;
     }
 
     /**
      * Set exchange rate value
      *
-     * @param float $exchangeRate
+     * @param float $exchangeRateValue
      */
-    public function setExchangeRate($exchangeRate)
+    public function setExchangeRateValue($exchangeRateValue)
     {
-        $this->exchangeRate = $exchangeRate;
+        $this->exchangeRateValue = $exchangeRateValue;
     }
 
     /**
-     * Get exchange rate type ID
+     * Get exchange rate type
      *
      * @return string
      */
-    public function getExchangeRateTypeId()
+    public function getExchangeRateType()
     {
-        return $this->exchangeRateTypeId;
+        return $this->exchangeRateType;
     }
 
     /**
@@ -438,9 +371,45 @@ abstract class AbstractArPayment extends AbstractFunction
      *
      * @param string $exchangeRateType
      */
-    public function setExchangeRateTypeId($exchangeRateTypeId)
+    public function setExchangeRateType($exchangeRateType)
     {
-        $this->exchangeRateTypeId = $exchangeRateTypeId;
+        $this->exchangeRateType = $exchangeRateType;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCreditCardType()
+    {
+        return $this->creditCardType;
+    }
+
+    /**
+     * @param string $creditCardType
+     */
+    public function setCreditCardType($creditCardType)
+    {
+        $this->creditCardType = $creditCardType;
+    }
+
+    /**
+     * Get authorization code
+     *
+     * @return string
+     */
+    public function getAuthorizationCode()
+    {
+        return $this->authorizationCode;
+    }
+
+    /**
+     * Set authorization code
+     *
+     * @param string $authorizationCode
+     */
+    public function setAuthorizationCode($authorizationCode)
+    {
+        $this->authorizationCode = $authorizationCode;
     }
 
     /**
@@ -484,62 +453,42 @@ abstract class AbstractArPayment extends AbstractFunction
     }
 
     /**
-     * Get overpayment amount
+     * Get reference number
      *
      * @return string
      */
-    public function getOverpaymentAmount()
+    public function getReferenceNumber()
     {
-        return $this->overpaymentAmount;
+        return $this->referenceNumber;
     }
 
     /**
-     * Set overpayment amount
+     * Set reference number
      *
-     * @param string $overpaymentAmount
+     * @param string $referenceNumber
      */
-    public function setOverpaymentAmount($overpaymentAmount)
+    public function setReferenceNumber($referenceNumber)
     {
-        $this->overpaymentAmount = $overpaymentAmount;
+        $this->referenceNumber = $referenceNumber;
     }
 
     /**
-     * Get payment date
+     * Get apply to transactions
      *
-     * @return string
+     * @return ArPaymentItem[]
      */
-    public function getPaymentDate()
+    public function getApplyToTransactions()
     {
-        return $this->paymentDate;
+        return $this->applyToTransactions;
     }
 
     /**
-     * Set payment date
+     * Set apply to transactions
      *
-     * @param string $paymentDate
+     * @param ArPaymentItem[] $applyToTransactions
      */
-    public function setPaymentDate($paymentDate)
+    public function setApplyToTransactions($applyToTransactions)
     {
-        $this->paymentDate = $paymentDate;
-    }
-
-    /**
-     * Get payment detail
-     *
-     * @return ArPaymentDetail[]
-     */
-    public function getPaymentDetail()
-    {
-        return $this->paymentDetail;
-    }
-
-    /**
-     * Set payment detail
-     *
-     * @param ArPaymentDetail $paymentDetail
-     */
-    public function setPaymentDetail(ArPaymentDetail $paymentDetail)
-    {
-        $this->paymentDetail = $paymentDetail;
+        $this->applyToTransactions = $applyToTransactions;
     }
 }

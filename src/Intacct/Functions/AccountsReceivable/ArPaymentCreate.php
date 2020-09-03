@@ -21,80 +21,74 @@ use Intacct\Xml\XMLWriter;
 use InvalidArgumentException;
 
 /**
- * Create a new accounts receivable payment record
+ * Create a new payments
  */
 class ArPaymentCreate extends AbstractArPayment
 {
 
     /**
+     * Write the function block XML
      *
      * @param XMLWriter $xml
+     * @throw InvalidArgumentException
      */
     public function writeXml(XMLWriter &$xml)
     {
         $xml->startElement('function');
         $xml->writeAttribute('controlid', $this->getControlId());
 
-        $xml->startElement('create_arpayment');
+        $xml->startElement('create');
+        $xml->startElement('ARPYMT');
 
-        if (!$this->getCustomerId()) {
-            throw new InvalidArgumentException('Customer ID is required for create');
-        }
-        $xml->writeElement('customerid', $this->getCustomerId(), true);
-        $xml->writeElement('paymentamount', $this->getTransactionPaymentAmount(), true);
-        $xml->writeElement('translatedamount', $this->getBasePaymentAmount());
+        $xml->writeElement('FINANCIALENTITY', $this->getFinancialEntity());
 
-        if ($this->getUndepositedFundsGlAccountNo()) {
-            $xml->writeElement('undepfundsacct', $this->getUndepositedFundsGlAccountNo());
-        } elseif ($this->getBankAccountId()) {
-            $xml->writeElement('bankaccountid', $this->getBankAccountId());
-        }
-
-        $xml->writeElement('refid', $this->getReferenceNumber());
-        $xml->writeElement('overpaylocid', $this->getOverpaymentLocationId());
-        $xml->writeElement('overpaydeptid', $this->getOverpaymentDepartmentId());
-
-        if (!$this->getReceivedDate()) {
-            throw new InvalidArgumentException('Received Date is required for create');
-        }
-        $xml->startElement('datereceived');
-        $xml->writeDateSplitElements($this->getReceivedDate(), true);
-        $xml->endElement(); //datereceived
-
-        if (!$this->getPaymentMethod()) {
+        if (empty($this->getPaymentMethod())) {
             throw new InvalidArgumentException('Payment Method is required for create');
         }
-        $xml->writeElement('paymentmethod', $this->getPaymentMethod(), true);
+        $xml->writeElement('PAYMENTMETHOD', $this->getPaymentMethod());
 
-        $xml->writeElement('basecurr', $this->getBaseCurrency());
-        $xml->writeElement('currency', $this->getTransactionCurrency());
+        if (empty($this->getCustomerId())) {
+            throw new InvalidArgumentException('Customer ID is required for create');
+        }
+        $xml->writeElement('CUSTOMERID', $this->getCustomerId());
 
-        if ($this->getExchangeRateDate()) {
-            $xml->startElement('exchratedate');
-            $xml->writeDateSplitElements($this->getExchangeRateDate(), true);
-            $xml->endElement();
+        $xml->writeElement('DOCNUMBER', $this->getDocNumber());
+        $xml->writeElement('DESCRIPTION', $this->getDescription());
+        $xml->writeElement('EXCH_RATE_TYPE_ID', $this->getExchangeRateTypeId());
+        $xml->writeElement('EXCHANGE_RATE', $this->getExchangeRate());
+        
+        if (empty($this->getReceiptDate())) {
+            throw new InvalidArgumentException('Receipt Date is required for create');
+        }
+        $xml->writeElement('RECEIPTDATE', $this->getReceiptDate());
+        $xml->writeElement('PAYMENTDATE', $this->getPaymentDate());
+        $xml->writeElement('AMOUNTOPAY', $this->getAmountToPay());
+        $xml->writeElement('TRX_AMOUNTTOPAY', $this->getTransactionAmountToPay());
+        $xml->writeElement('PRBATCH', $this->getPrBatch());
+        $xml->writeElement('WHENPAID', $this->getWhenPaid());
+        
+        if (empty($this->getCurrency())) {
+            throw new InvalidArgumentException('Currency is required for create');
+        }
+        $xml->writeElement('CURRENCY', $this->getCurrency());
+
+        $xml->writeElement('BASECURR', $this->getBaseCurrency());
+        $xml->writeElement('UNDEPOSITEDACCOUNTNO', $this->getUndepositedFundsGlAccountNo());
+        $xml->writeElement('OVERPAYMENTAMOUNT', $this->getOverpaymentAmount());
+        $xml->writeElement('OVERPAYMENTLOCATIONID', $this->getOverpaymentLocationId());
+        $xml->writeElement('OVERPAYMENTDEPARTMENTID', $this->getOverpaymentDepartmentId());
+        $xml->writeElement('BILLTOPAYNAME', $this->getBillToPayName());
+
+        if (!empty($this->getPaymentDetail())) {
+            $xml->startElement('ARPYMTDETAILS');
+            $this->getPaymentDetail()->writeXml($xml);
+            $xml->endElement(); // ARPYMTDETAILS
         }
 
-        if ($this->getExchangeRateType()) {
-            $xml->writeElement('exchratetype', $this->getExchangeRateType());
-        } elseif ($this->getExchangeRateValue()) {
-            $xml->writeElement('exchrate', $this->getExchangeRateValue());
-        } elseif ($this->getBaseCurrency() || $this->getTransactionCurrency()) {
-            $xml->writeElement('exchratetype', $this->getExchangeRateType(), true);
-        }
-
-        $xml->writeElement('cctype', $this->getCreditCardType());
-        $xml->writeElement('authcode', $this->getAuthorizationCode());
-
-        if (count($this->getApplyToTransactions()) > 0) {
-            foreach ($this->getApplyToTransactions() as $applyToTransaction) {
-                $applyToTransaction->writeXml($xml);
-            }
-        }
-
-        //TODO online payment methods
-
-        $xml->endElement(); //create_arpayment
+        //$xml->writeElement('ONLINECARDPAYMENT', $this->getOnlineCardPayment(), true);
+        
+        $xml->endElement(); //ARPYMT
+        $xml->endElement(); //create
 
         $xml->endElement(); //function
     }

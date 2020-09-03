@@ -20,19 +20,19 @@ namespace Intacct\Functions\AccountsReceivable;
 use Intacct\Xml\XMLWriter;
 
 /**
- * @coversDefaultClass \Intacct\Functions\AccountsReceivable\ArPaymentItem
+ * @coversDefaultClass \Intacct\Functions\AccountsReceivable\ArPaymentDetail
  */
-class ArPaymentItemTest extends \PHPUnit\Framework\TestCase
+class ArPaymentDetailTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testDefaultParams()
     {
         $expected = <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
-<arpaymentitem>
-    <invoicekey>1234</invoicekey>
-    <amount>1023.45</amount>
-</arpaymentitem>
+<ARPYMTDETAIL>
+    <RECORDKEY>1234</RECORDKEY>
+    <TRX_PAYMENTAMOUNT>1023.45</TRX_PAYMENTAMOUNT>
+</ARPYMTDETAIL>
 EOF;
 
         $xml = new XMLWriter();
@@ -41,9 +41,9 @@ EOF;
         $xml->setIndentString('    ');
         $xml->startDocument();
 
-        $item = new ArPaymentItem();
-        $item->setApplyToRecordId(1234);
-        $item->setAmountToApply(1023.45);
+        $item = new ArPaymentDetail();
+        $item->setRecordKey(1234);
+        $item->setTrxPaymentAmount(1023.45);
 
         $item->writeXml($xml);
 

@@ -26,34 +26,38 @@ use InvalidArgumentException;
 class ArPaymentCreateTest extends \PHPUnit\Framework\TestCase
 {
 
-    public function testDefaultParams()
+    public function getXml()
     {
-        $expected = <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<function controlid="unittest">
-    <create_arpayment>
-        <customerid>C0020</customerid>
-        <paymentamount>1922.12</paymentamount>
-        <datereceived>
-            <year>2016</year>
-            <month>06</month>
-            <day>30</day>
-        </datereceived>
-        <paymentmethod>Printed Check</paymentmethod>
-    </create_arpayment>
-</function>
-EOF;
-
         $xml = new XMLWriter();
         $xml->openMemory();
         $xml->setIndent(true);
         $xml->setIndentString('    ');
         $xml->startDocument();
+        return $xml;
+    }
 
+    public function testDefaultParams()
+    {
+        $expected = <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<function controlid="unittest">
+    <create>
+        <ARPYMT>
+            <PAYMENTMETHOD>Printed Check</PAYMENTMETHOD>
+            <CUSTOMERID>C0020</CUSTOMERID>
+            <RECEIPTDATE>05/15/2019</RECEIPTDATE>
+            <CURRENCY>CAD</CURRENCY>
+        </ARPYMT>
+    </create>
+</function>
+EOF;
+
+        $xml = $this->getXml();
+    
         $payment = new ArPaymentCreate('unittest');
         $payment->setCustomerId('C0020');
-        $payment->setTransactionPaymentAmount(1922.12);
-        $payment->setReceivedDate(new \DateTime('2016-06-30'));
+        $payment->setReceiptDate('05/15/2019');
+        $payment->setCurrency('CAD');
         $payment->setPaymentMethod($payment::PAYMENT_METHOD_CHECK);
 
         $payment->writeXml($xml);
@@ -67,15 +71,12 @@ EOF;
      */
     public function testRequiredCustomerId()
     {
-        $xml = new XMLWriter();
-        $xml->openMemory();
-        $xml->setIndent(true);
-        $xml->setIndentString('    ');
-        $xml->startDocument();
+        $xml = $this->getXml();
 
         $payment = new ArPaymentCreate('unittest');
         //$payment->setCustomerId('C0020');
-        $payment->setReceivedDate(new \DateTime('2016-06-30'));
+        $payment->setReceiptDate('05/15/2019');
+        $payment->setCurrency('CAD');
         $payment->setPaymentMethod($payment::PAYMENT_METHOD_CHECK);
 
         $payment->writeXml($xml);
@@ -83,19 +84,16 @@ EOF;
 
     /**
      * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Received Date is required for create
+     * @expectedExceptionMessage Receipt Date is required for create
      */
     public function testRequiredReceivedDate()
     {
-        $xml = new XMLWriter();
-        $xml->openMemory();
-        $xml->setIndent(true);
-        $xml->setIndentString('    ');
-        $xml->startDocument();
+        $xml = $this->getXml();
 
         $payment = new ArPaymentCreate('unittest');
         $payment->setCustomerId('C0020');
-        //$payment->setReceivedDate(new Date('2016-06-30'));
+        //$payment->setReceiptDate('05/15/2019');
+        $payment->setCurrency('CAD');
         $payment->setPaymentMethod($payment::PAYMENT_METHOD_CHECK);
 
         $payment->writeXml($xml);
@@ -107,17 +105,73 @@ EOF;
      */
     public function testRequiredPaymentMethod()
     {
-        $xml = new XMLWriter();
-        $xml->openMemory();
-        $xml->setIndent(true);
-        $xml->setIndentString('    ');
-        $xml->startDocument();
+        $xml = $this->getXml();
 
         $payment = new ArPaymentCreate('unittest');
         $payment->setCustomerId('C0020');
-        $payment->setReceivedDate(new \DateTime('2016-06-30'));
+        $payment->setReceiptDate('05/15/2019');
+        $payment->setCurrency('CAD');
         //$payment->setPaymentMethod($payment::PAYMENT_METHOD_CHECK);
 
         $payment->writeXml($xml);
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Currency is required for create
+     */
+    public function testRequiredCurrencyMethod()
+    {
+        $xml = $this->getXml();
+
+        $payment = new ArPaymentCreate('unittest');
+        $payment->setCustomerId('C0020');
+        $payment->setReceiptDate('05/15/2019');
+        //$payment->setCurrency('CAD');
+        $payment->setPaymentMethod($payment::PAYMENT_METHOD_CHECK);
+
+        $payment->writeXml($xml);
+    }
+
+    public function testPaymentDetailOnCreate()
+    {
+        $xml = $this->getXml();
+
+        $expected = <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<function controlid="unittest">
+    <create>
+        <ARPYMT>
+            <PAYMENTMETHOD>Printed Check</PAYMENTMETHOD>
+            <CUSTOMERID>C0020</CUSTOMERID>
+            <RECEIPTDATE>05/15/2019</RECEIPTDATE>
+            <CURRENCY>CAD</CURRENCY>
+            <ARPYMTDETAILS>
+                <ARPYMTDETAIL>
+                    <RECORDKEY>1</RECORDKEY>
+                    <TRX_PAYMENTAMOUNT>10</TRX_PAYMENTAMOUNT>
+                </ARPYMTDETAIL>
+            </ARPYMTDETAILS>
+        </ARPYMT>
+    </create>
+</function>
+EOF;
+
+        $payment = new ArPaymentCreate('unittest');
+        $payment->setCustomerId('C0020');
+        $payment->setReceiptDate('05/15/2019');
+        $payment->setCurrency('CAD');
+        $payment->setPaymentMethod($payment::PAYMENT_METHOD_CHECK);
+        
+        $detail = new ArPaymentDetail();
+        $detail->setRecordKey(1);
+        $detail->setTrxPaymentAmount(10);
+
+        $payment->setPaymentDetail($detail);
+
+        $payment->writeXml($xml);
+
+        $this->assertXmlStringEqualsXmlString($expected, $xml->flush());
+
     }
 }

@@ -19,7 +19,7 @@ namespace Intacct\Functions\AccountsReceivable;
 
 use Intacct\Xml\XMLWriter;
 
-class ArPaymentItem
+class ArLegacyPaymentItem
 {
 
     /** @var string|int */
