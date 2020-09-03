@@ -1,6 +1,6 @@
 {
-  "name": "intacct/intacct-sdk-php",
-  "description": "Sage Intacct SDK for PHP",
+  "name": "frontiersnorth/intacct-sdk-php",
+  "description": "Sage Intacct SDK for PHP, Frontiers North version",
   "type": "library",
   "license": "Apache-2.0",
   "authors": [
